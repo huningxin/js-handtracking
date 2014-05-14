@@ -29,7 +29,8 @@ HT.Tracker = function(params){
   this.eroded = new CV.Image();
   this.contours = [];
   
-  this.skinner = new HT.Skinner();
+  this.skinner = new HT.Skinner(this.params.depth);
+
 };
 
 HT.Tracker.prototype.detect = function(image){
@@ -106,7 +107,8 @@ HT.Candidate = function(contour){
   this.defects = CV.convexityDefects(contour, this.hull);
 };
 
-HT.Skinner = function(){
+HT.Skinner = function(depth){
+  this.depth = depth;
 };
 
 HT.Skinner.prototype.mask = function(imageSrc, imageDst){
@@ -119,28 +121,38 @@ HT.Skinner.prototype.mask = function(imageSrc, imageDst){
     g = src[i + 1];
     b = src[i + 2];
   
-    v = Math.max(r, g, b);
-    s = v === 0? 0: 255 * ( v - Math.min(r, g, b) ) / v;
-    h = 0;
-    
-    if (0 !== s){
-      if (v === r){
-        h = 30 * (g - b) / s;
-      }else if (v === g){
-        h = 60 + ( (b - r) / s);
-      }else{
-        h = 120 + ( (r - g) / s);
-      }
-      if (h < 0){
-        h += 360;
-      }
-    }
-    
-    value = 0;
+    if (this.depth) {
+      depth = (0.299 * r + 0.587 * g + 0.114 * b) << 4;
 
-    if (v >= 15 && v <= 250){
-      if (h >= 3 && h <= 33){
+      value = 0;
+
+      if (depth < 300){
         value = 255;
+      }
+    } else {
+      v = Math.max(r, g, b);
+      s = v === 0? 0: 255 * ( v - Math.min(r, g, b) ) / v;
+      h = 0;
+      
+      if (0 !== s){
+        if (v === r){
+          h = 30 * (g - b) / s;
+        }else if (v === g){
+          h = 60 + ( (b - r) / s);
+        }else{
+          h = 120 + ( (r - g) / s);
+        }
+        if (h < 0){
+          h += 360;
+        }
+      }
+      
+      value = 0;
+
+      if (v >= 15 && v <= 250){
+        if (h >= 3 && h <= 33){
+          value = 255;
+        }
       }
     }
     
