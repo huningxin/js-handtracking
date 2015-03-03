@@ -37,6 +37,7 @@
         document.getElementById("gestures").innerHTML += event.name + "\n";
       });
 
+      this.cbxSimple = document.getElementById("cbxSimple");
       this.cbxHull = document.getElementById("cbxHull");
       this.cbxDefects = document.getElementById("cbxDefects");
       this.cbxSkin = document.getElementById("cbxSkin");
@@ -82,6 +83,7 @@
         image = this.snapshot();
 
         this.tracker.params.fingers = this.cbxFinger.checked;
+        this.tracker.params.simple = this.cbxSimple.checked;
         candidate = this.tracker.detectMultiple(image);
 
         this.draw(candidate);
@@ -100,20 +102,21 @@
         var candidate = candidates[k];
         if (candidate) {
 
-          if (this.cbxHull.checked) {
+          if (this.cbxHull.checked && !this.cbxSimple.checked) {
             this.drawHull(candidate.hull, "red");
           }
 
-          if (this.cbxDefects.checked) {
+          if (this.cbxDefects.checked && !this.cbxSimple.checked) {
             this.drawDefects(candidate.defects, "blue");
           }
 
-          this.context.fillText("o", candidate.gravity.x, candidate.gravity.y);
+          if (!this.cbxSimple.checked)
+            this.context.fillText("o", candidate.gravity.x, candidate.gravity.y);
 
           var fingerGraph = candidate.fingerGraph;
           var fingers = candidate.fingers; ;
 
-          if (this.cbxFinger.checked && fingerGraph) {
+          if (this.cbxFinger.checked && fingerGraph  && !this.cbxSimple.checked) {
             this.context.save();
             this.context.strokeStyle = "rgb(255,255,255)";
 
@@ -124,6 +127,9 @@
                 this.context.lineTo(i / fingerGraph.length * 150, 100 - fingerGraph[i].value * 90);
               }
             }
+          }
+
+          if (fingers) {
             this.context.stroke();
             this.context.fillStyle = "rgb(255,0,0)";
             for (var i = 0; i < fingers.length; ++i) {
@@ -131,6 +137,7 @@
             }
             this.context.restore();
           }
+
           var rects = candidate.rects;
 
           if (rects) {
@@ -232,6 +239,7 @@
     <video id="video" autoplay="true" style="display:none;" src=""></video>
     <canvas id="canvas" style="width:640px; height:480px;border:1px solid black;" width="640" height="480"></canvas>
     <div style="margin: 15px;">
+      <input id="cbxSimple" type="checkbox">Simple
       <input id="cbxHull" type="checkbox" checked="checked">Convex Hull
       <input id="cbxDefects" type="checkbox">Convexity Defects
       <input id="cbxSkin" type="checkbox" checked="checked">Skin Detection
