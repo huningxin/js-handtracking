@@ -55,7 +55,7 @@
 
       navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
       if (navigator.getUserMedia) {
-        navigator.getUserMedia({ video: { 'mandatory': { 'depth': true}} },
+        navigator.getUserMedia({ video: true },
           function(stream) { return that.videoReady(stream); },
           function(error) { return that.videoError(error); });
       }
@@ -72,6 +72,7 @@
     };
       
     DEMO.prototype.videoError = function(error){
+      console.log(error);
     };
 
     DEMO.prototype.tick = function() {
